@@ -1,12 +1,68 @@
+name: Ride Booking Full Stack CI
 
-    - name: Comment PR
-      if: failure()
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: "❌ CI Failed. Please fix errors before merging."
-          })
+on:
+  push:
+    branches: [ "priyanka-mainBranch", "version2" ]
+  pull_request:
+    branches: [ "priyanka-mainBranch", "version2" ]
+
+jobs:
+
+  backend:
+    name: Ride Backend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Ride Backend
+        working-directory: ./backend/ride
+        run: |
+          chmod +x mvnw
+          ./mvnw clean install -DskipTests
+
+      - name: Build Docker Image
+        working-directory: ./backend/ride
+        run: docker build -t ride-backend .
+
+  frontend:
+    name: Ride Frontend Build
+    runs-on: ubuntu-latest
+    needs: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package-lock.json
+
+      - name: Configure npm
+        working-directory: ./frontend
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-maxtimeout 600000
+          npm config set fetch-retry-mintimeout 20000
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: |
+          for i in 1 2 3; do
+            npm install --no-audit --no-fund && break || sleep 10
+          done
+
+      - name: Build Ride Frontend
+        working-directory: ./frontend
+        run: npm run build

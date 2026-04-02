@@ -29,8 +29,8 @@ jobs:
           ./mvnw clean install -DskipTests
 
       - name: Build Docker Image
-        working-directory: ./backend/ride
-        run: docker build -t ride-backend -f Dockerfile .
+        working-directory: ./backend
+        run: docker build -t ride-backend .
 
   frontend:
     name: Ride Frontend Build

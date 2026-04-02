@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker Image
         working-directory: ./backend/ride
-        run: docker build -t ride-backend -f .dockerfile .
+        run: docker build -t ride-backend -f Dockerfile .
 
   frontend:
     name: Ride Frontend Build

@@ -1,7 +1,6 @@
+
 package com.example.ride.dto;
-
 import lombok.Data;
-
 @Data
 public class UserRequest {
 

@@ -26,5 +26,7 @@ public class Ride {
 
     private String status;
 
+    private Integer rating;
+
     private LocalDateTime requestedAt;
 }

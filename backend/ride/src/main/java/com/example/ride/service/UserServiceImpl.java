@@ -23,7 +23,12 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setAvailabilityStatus(request.getAvailabilityStatus());
+        
+        if (request.getAvailabilityStatus() == null && "DRIVER".equalsIgnoreCase(request.getRole())) {
+            user.setAvailabilityStatus("AVAILABLE");
+        } else {
+            user.setAvailabilityStatus(request.getAvailabilityStatus());
+        }
 
         return userRepository.save(user);
     }

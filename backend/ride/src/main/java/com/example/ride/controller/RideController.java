@@ -24,4 +24,14 @@ public class RideController {
                            @RequestBody RideStatusUpdateRequest request){
         return rideService.updateRideStatus(id,request.getStatus());
     }
+
+    @PutMapping("/{id}/rate")
+    public Ride rateRide(@PathVariable Long id, @RequestParam Integer rating){
+        return rideService.rateRide(id, rating);
+    }
+
+    @GetMapping
+    public java.util.List<Ride> getAllRides() {
+        return rideService.getAllRides();
+    }
 }

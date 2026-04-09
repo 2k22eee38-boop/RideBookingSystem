@@ -25,4 +25,8 @@ public class User {
     private Double longitude;
 
     private String availabilityStatus; // AVAILABLE / BUSY
+
+    private Integer points = 0;
+
+    private Double bonus = 0.0;
 }

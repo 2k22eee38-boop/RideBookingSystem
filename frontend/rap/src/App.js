@@ -65,7 +65,7 @@ function App() {
           <Route path="/" element={<RoleRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           <Route path="/user-dashboard" element={<ProtectedRoute allowedRoles={['USER']}><UserDashboard /></ProtectedRoute>} />
           <Route path="/driver-dashboard" element={<ProtectedRoute allowedRoles={['DRIVER']}><DriverDashboard /></ProtectedRoute>} />
           <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />

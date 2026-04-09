@@ -23,18 +23,18 @@ function Login() {
       <h2>Login</h2>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Control 
-            type="email" 
-            placeholder="Email Address" 
+          <Form.Control
+            type="email"
+            placeholder="Email Address"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </Form.Group>
 
         <Form.Group className="mb-4" controlId="formBasicPassword">
-          <Form.Control 
-            type="password" 
-            placeholder="Password" 
+          <Form.Control
+            type="password"
+            placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
             required
           />

@@ -8,7 +8,7 @@ function UserDashboard() {
   const [rideStatus, setRideStatus] = useState(null);
   const [complaintMsg, setComplaintMsg] = useState('');
   const [rating, setRating] = useState(5);
-  
+
   const user = JSON.parse(localStorage.getItem('user'));
 
   // Very simplified API interaction for booking and tracking
@@ -35,7 +35,7 @@ function UserDashboard() {
   };
 
   return (
-    <div className="glass-card mt-5 mb-5 w-100" style={{maxWidth: '800px'}}>
+    <div className="glass-card mt-5 mb-5 w-100" style={{ maxWidth: '800px' }}>
       <h2 className="mb-4">Hello, {user.name}</h2>
 
       {!rideStatus ? (
@@ -66,7 +66,7 @@ function UserDashboard() {
               <Button onClick={submitRating} variant="success">Submit Rating</Button>
             </div>
           ) : (
-             <Button variant="secondary" onClick={() => setRideStatus({...rideStatus, status: 'COMPLETED'})}>Simulate Ride Completion</Button>
+            <Button variant="secondary" onClick={() => setRideStatus({ ...rideStatus, status: 'COMPLETED' })}>Simulate Ride Completion</Button>
           )}
         </Card>
       )}

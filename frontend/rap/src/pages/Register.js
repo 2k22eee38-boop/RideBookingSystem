@@ -25,27 +25,27 @@ function Register() {
       <h2>User Registration</h2>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3" controlId="formBasicName">
-          <Form.Control 
-            type="text" 
-            placeholder="Full Name" 
+          <Form.Control
+            type="text"
+            placeholder="Full Name"
             onChange={(e) => setName(e.target.value)}
             required
           />
         </Form.Group>
 
         <Form.Group className="mb-4" controlId="formBasicEmail">
-          <Form.Control 
-            type="email" 
-            placeholder="Email Address" 
+          <Form.Control
+            type="email"
+            placeholder="Email Address"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </Form.Group>
 
         <Form.Group className="mb-4" controlId="formBasicPassword">
-          <Form.Control 
-            type="password" 
-            placeholder="Password" 
+          <Form.Control
+            type="password"
+            placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
             required
           />

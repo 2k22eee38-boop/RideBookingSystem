@@ -8,17 +8,74 @@ function UserDashboard() {
   const [rideStatus, setRideStatus] = useState(null);
   const [complaintMsg, setComplaintMsg] = useState('');
   const [rating, setRating] = useState(5);
+  
+  // New States for Driver Override Feature
+  const [availableDrivers, setAvailableDrivers] = useState([]);
+  const [selectedDriverId, setSelectedDriverId] = useState('');
 
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(sessionStorage.getItem('user'));
 
-  // Very simplified API interaction for booking and tracking
+  // Feature: Pre-load available drivers whenever rideStatus is null (user is allowed to book)
+  useEffect(() => {
+    if (!rideStatus) {
+      const fetchDrivers = async () => {
+        try {
+          // Fetch users and active rides to determine busy drivers
+          const respUsers = await axios.get('http://localhost:8080/users');
+          const respRides = await axios.get('http://localhost:8080/rides');
+          
+          // Identify drivers who are currently in an active ride workflow
+          const activeRides = respRides.data.filter(r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
+          const busyDriverIds = activeRides.map(r => r.driverId);
+
+          // Map and filter exclusively free drivers
+          let drivers = respUsers.data.filter(u => u.role === 'DRIVER' && !busyDriverIds.includes(u.id));
+          
+          // Shuffle randomly and take only up to 3 random free drivers
+          drivers = drivers.sort(() => 0.5 - Math.random()).slice(0, 3);
+          
+          setAvailableDrivers(drivers);
+        } catch (e) { console.error('Error fetching available drivers', e); }
+      };
+      fetchDrivers();
+    }
+  }, [rideStatus]);
+
+  useEffect(() => {
+    let intervalId;
+    if (rideStatus && rideStatus.status !== 'COMPLETED' && rideStatus.status !== 'CANCELLED') {
+      intervalId = setInterval(async () => {
+        try {
+          // Poll for ride updates
+          const resp = await axios.get('http://localhost:8080/rides');
+          const rides = resp.data;
+          // Find the active ride for this user
+          const currentRide = rides.find(r => r.id === rideStatus.id);
+          if (currentRide) {
+            setRideStatus(currentRide);
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 3000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [rideStatus]);
+
+  // Handle Ride Booking
   const bookRide = async (e) => {
     e.preventDefault();
     try {
-      const resp = await axios.post('http://localhost:8080/rides', { pickupLocation: pickup, dropLocation: drop, customerId: user.id });
+      const payload = { pickupLocation: pickup, dropLocation: drop, customerId: user.id };
+      if (selectedDriverId && selectedDriverId !== "auto") {
+        payload.driverId = parseInt(selectedDriverId);
+      }
+      const resp = await axios.post('http://localhost:8080/rides', payload);
       setRideStatus(resp.data);
     } catch (err) {
-      alert("Error booking ride. Please ensure a 'DRIVER' account is registered in the system!");
+      alert("Error booking ride. Please ensure a 'DRIVER' account is registered and actively available.");
     }
   };
 
@@ -39,20 +96,49 @@ function UserDashboard() {
       <h2 className="mb-4">Hello, {user.name}</h2>
 
       {!rideStatus ? (
-        <Card bg="dark" className="p-3 mb-4">
-          <Card.Title>Book a new Ride</Card.Title>
-          <Form onSubmit={bookRide}>
-            <Form.Control className="mb-2" placeholder="Pickup Location" onChange={(e) => setPickup(e.target.value)} required />
-            <Form.Control className="mb-2" placeholder="Drop Location" onChange={(e) => setDrop(e.target.value)} required />
-            <Button type="submit" variant="primary">Search Driver</Button>
-          </Form>
-        </Card>
+        availableDrivers.length === 0 ? (
+          <Alert variant="warning" className="text-center">
+            <strong>No Drivers Available.</strong><br/>
+            Please check back later once an Admin registers active drivers.
+          </Alert>
+        ) : (
+          <Card bg="dark" className="p-3 mb-4">
+            <Card.Title>Book a new Ride</Card.Title>
+            <Form onSubmit={bookRide}>
+              <Form.Control className="mb-2" placeholder="Pickup Location" onChange={(e) => setPickup(e.target.value)} required />
+              <Form.Control className="mb-2" placeholder="Drop Location" onChange={(e) => setDrop(e.target.value)} required />
+              
+              <Form.Select className="mb-3" value={selectedDriverId} onChange={(e) => setSelectedDriverId(e.target.value)} required>
+                <option value="">-- Explicitly Select your Driver --</option>
+                {availableDrivers.map(d => (
+                  <option key={d.id} value={d.id}>{d.name} (ID: {d.id})</option>
+                ))}
+              </Form.Select>
+
+              <Button type="submit" variant="primary">Submit Booking</Button>
+            </Form>
+          </Card>
+        )
       ) : (
         <Card bg="dark" className="p-3 mb-4 border-info">
           <Card.Title>Ride Status: {rideStatus.status}</Card.Title>
-          <Card.Text>Driver ID: {rideStatus.driverId || 'Finding...'}</Card.Text>
+          <Card.Text>Driver ID: {rideStatus.driverId || 'Tracing...'}</Card.Text>
           <Card.Text>Fare estimated: ₹{rideStatus.fare}</Card.Text>
-          <Alert variant="info">Tracking details: Driver is 2 mins away.</Alert>
+          
+          {rideStatus.status === 'REQUESTED' && <Alert variant="info">Waiting on Driver...</Alert>}
+          
+          {rideStatus.status === 'ACCEPTED' && (
+             <Alert variant="success">The driver accepted your ride! They are on the way.</Alert>
+          )}
+
+          {rideStatus.status === 'CANCELLED' && (
+             <Alert variant="danger">
+               The driver declined the ride. Please try selecting someone else.
+               <div className="mt-2 text-end">
+                 <Button size="sm" variant="outline-danger" onClick={() => setRideStatus(null)}>Book Another</Button>
+               </div>
+             </Alert>
+          )}
 
           {rideStatus.status === 'COMPLETED' ? (
             <div className="mt-3">
@@ -81,3 +167,4 @@ function UserDashboard() {
 }
 
 export default UserDashboard;
+

@@ -33,3 +33,10 @@ build/
 .vscode/
 
 .env
+
+# Database files
+*.mv.db
+*.trace.db
+
+# H2 database folder
+backend/ride/data/

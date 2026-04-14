@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/complaints")
@@ -22,5 +23,10 @@ public class ComplaintController {
     @GetMapping
     public List<Complaint> getAllComplaints() {
         return complaintService.getAllComplaints();
+    }
+
+    @PutMapping("/{id}/status")
+    public Complaint updateComplaintStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return complaintService.updateComplaintStatus(id, body.get("status"));
     }
 }

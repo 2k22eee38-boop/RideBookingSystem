@@ -6,14 +6,20 @@ import authService from '../services/authService';
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const role = 'USER'; // Hardcoded strictly to USER based on requirements
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
     try {
-      await authService.register({ name, email, password, role });
+      await authService.register({ name, email, phoneNumber, password, role });
       window.location.href = '/'; // Trigger full refresh for Auto-login RoleRedirect
     } catch (error) {
       alert("Registration failed");
@@ -42,11 +48,29 @@ function Register() {
           />
         </Form.Group>
 
+        <Form.Group className="mb-4" controlId="formBasicPhone">
+          <Form.Control
+            type="tel"
+            placeholder="Phone Number"
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            required
+          />
+        </Form.Group>
+
         <Form.Group className="mb-4" controlId="formBasicPassword">
           <Form.Control
             type="password"
             placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-4" controlId="formBasicConfirmPassword">
+          <Form.Control
+            type="password"
+            placeholder="Confirm Password"
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
         </Form.Group>

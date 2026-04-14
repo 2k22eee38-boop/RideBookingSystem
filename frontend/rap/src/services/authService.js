@@ -4,7 +4,7 @@ const API = "http://localhost:8080/auth";
 
 // Intercept requests to include the JWT token
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -14,8 +14,8 @@ axios.interceptors.request.use((config) => {
 const login = async (data) => {
   const response = await axios.post(`${API}/login`, data);
   if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data));
+    sessionStorage.setItem('token', response.data.token);
+    sessionStorage.setItem('user', JSON.stringify(response.data));
   }
   return response.data;
 };
@@ -23,15 +23,15 @@ const login = async (data) => {
 const register = async (data) => {
   const response = await axios.post(`${API}/register`, data);
   if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data));
+    sessionStorage.setItem('token', response.data.token);
+    sessionStorage.setItem('user', JSON.stringify(response.data));
   }
   return response.data;
 };
 
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
 };
 
 export default {

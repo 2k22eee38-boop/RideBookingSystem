@@ -6,11 +6,13 @@ function AdminDashboard() {
   const [drivers, setDrivers] = useState([]);
   const [rides, setRides] = useState([]);
   const [complaints, setComplaints] = useState([]);
+  const [usersMap, setUsersMap] = useState({});
 
   // Driver creation form states
   const [dName, setDName] = useState('');
   const [dEmail, setDEmail] = useState('');
   const [dPass, setDPass] = useState('');
+  const [dConfirmPass, setDConfirmPass] = useState('');
 
   useEffect(() => {
     loadData();
@@ -24,26 +26,47 @@ function AdminDashboard() {
       setRides(rResp.data);
       const cResp = await axios.get('http://localhost:8080/complaints');
       setComplaints(cResp.data);
-    } catch(e) {}
+      
+      const uResp = await axios.get('http://localhost:8080/users');
+      const map = {};
+      for(let u of uResp.data) {
+        map[u.id] = u.name;
+      }
+      setUsersMap(map);
+    } catch(e) {
+      console.error(e);
+    }
   };
 
   const deleteDriver = async (id) => {
-    await axios.delete(`http://localhost:8080/admin/drivers/${id}`);
-    loadData();
+    if (window.confirm("Are you sure you want to delete this driver?")) {
+      await axios.delete(`http://localhost:8080/admin/drivers/${id}`);
+      loadData();
+    }
   };
 
   const handleAddDriver = async (e) => {
     e.preventDefault();
+    if (dPass !== dConfirmPass) {
+      alert("Passwords do not match");
+      return;
+    }
     try {
       await axios.post('http://localhost:8080/auth/register', {
         name: dName, email: dEmail, password: dPass, role: 'DRIVER'
       });
       alert('Driver added successfully!');
-      setDName(''); setDEmail(''); setDPass('');
+      setDName(''); setDEmail(''); setDPass(''); setDConfirmPass('');
       loadData();
     } catch (e) {
       alert('Error creating driver.');
     }
+  };
+
+  const toggleComplaintStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'PENDING' ? 'RESOLVED' : 'PENDING';
+    await axios.put(`http://localhost:8080/complaints/${id}/status`, { status: newStatus });
+    loadData();
   };
 
   return (
@@ -59,7 +82,7 @@ function AdminDashboard() {
             <tbody>
               {rides.map(r => (
                 <tr key={r.id}>
-                  <td>{r.id}</td><td>{r.customerId}</td><td>{r.driverId}</td>
+                  <td>{r.id}</td><td>{usersMap[r.customerId] || r.customerId}</td><td>{usersMap[r.driverId] || r.driverId}</td>
                   <td>{r.pickupLocation}</td><td>{r.dropLocation}</td>
                   <td>{r.status}</td><td>{r.rating || 'N/A'}</td>
                 </tr>
@@ -75,7 +98,8 @@ function AdminDashboard() {
                  <Col><Form.Control placeholder="Name" value={dName} onChange={e=>setDName(e.target.value)} required/></Col>
                  <Col><Form.Control type="email" placeholder="Email" value={dEmail} onChange={e=>setDEmail(e.target.value)} required/></Col>
                  <Col><Form.Control type="password" placeholder="Password" value={dPass} onChange={e=>setDPass(e.target.value)} required/></Col>
-                 <Col xs="auto"><Button type="submit" variant="primary">Add Driver</Button></Col>
+                 <Col><Form.Control type="password" placeholder="Confirm" value={dConfirmPass} onChange={e=>setDConfirmPass(e.target.value)} required/></Col>
+                 <Col xs="auto"><Button type="submit" variant="primary">Add</Button></Col>
                </Row>
              </Form>
            </Card>
@@ -98,19 +122,25 @@ function AdminDashboard() {
         <Tab eventKey="complaints" title="Complaints">
            <Table striped bordered hover variant="dark" responsive>
             <thead>
-              <tr><th>ID</th><th>Role</th><th>UID</th><th>Message</th><th>Status</th></tr>
+              <tr><th>ID</th><th>Role</th><th>Submitter Name</th><th>Message</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {complaints.map(c => (
                 <tr key={c.id}>
-                  <td>{c.id}</td><td>{c.submitterRole}</td><td>{c.submitterId}</td>
+                  <td>{c.id}</td><td>{c.submitterRole}</td><td>{usersMap[c.submitterId] || c.submitterId}</td>
                   <td>{c.message}</td><td>{c.status}</td>
+                  <td>
+                    <Button size="sm" variant={c.status === 'PENDING' ? 'success' : 'secondary'} 
+                      onClick={() => toggleComplaintStatus(c.id, c.status)}>
+                      {c.status === 'PENDING' ? 'Mark Resolved' : 'Mark Pending'}
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </Table>
         </Tab>
-      </Tabs>
+       </Tabs>
     </div>
   );
 }

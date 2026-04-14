@@ -23,4 +23,10 @@ public class ComplaintService {
     public List<Complaint> getAllComplaints() {
         return complaintRepository.findAll();
     }
+
+    public Complaint updateComplaintStatus(Long id, String status) {
+        Complaint complaint = complaintRepository.findById(id).orElseThrow(() -> new RuntimeException("Complaint not found"));
+        complaint.setStatus(status);
+        return complaintRepository.save(complaint);
+    }
 }

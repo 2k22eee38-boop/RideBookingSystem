@@ -22,15 +22,5 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole("ADMIN");
             userRepository.save(admin);
         }
-        
-        if (userRepository.findByEmail("driver@test.com").isEmpty()) {
-            User driver = new User();
-            driver.setName("Default Driver");
-            driver.setEmail("driver@test.com");
-            driver.setPassword("password");
-            driver.setRole("DRIVER");
-            driver.setAvailabilityStatus("AVAILABLE");
-            userRepository.save(driver);
-        }
     }
 }

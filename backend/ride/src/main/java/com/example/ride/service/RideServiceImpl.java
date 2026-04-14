@@ -22,7 +22,13 @@ public class RideServiceImpl implements RideService {
     @Override
     public Ride requestRide(RideRequest request) {
 
-        User driver = driverService.assignDriver();
+        User driver;
+        if (request.getDriverId() != null) {
+            driver = userRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Selected driver not found"));
+        } else {
+            throw new RuntimeException("A Driver must be manually selected before booking a ride.");
+        }
 
         Ride ride = new Ride();
 

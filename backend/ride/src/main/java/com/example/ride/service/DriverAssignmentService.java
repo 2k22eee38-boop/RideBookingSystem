@@ -4,6 +4,9 @@ import com.example.ride.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DriverAssignmentService {
@@ -11,10 +14,11 @@ public class DriverAssignmentService {
     private final UserService userService;
 
     public User assignDriver() {
-
-        return userService.getAvailableDrivers()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No drivers available"));
+        List<User> drivers = userService.getAvailableDrivers();
+        if (drivers.isEmpty()) {
+            throw new RuntimeException("No drivers available");
+        }
+        Collections.shuffle(drivers);
+        return drivers.get(0);
     }
-}
+}

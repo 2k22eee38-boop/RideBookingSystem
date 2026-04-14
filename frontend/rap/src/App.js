@@ -10,7 +10,7 @@ import authService from './services/authService';
 import './App.css';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   if (!userStr) return <Navigate to="/login" replace />;
   const user = JSON.parse(userStr);
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 const RoleRedirect = () => {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   if (!userStr) return <Navigate to="/login" replace />;
   const user = JSON.parse(userStr);
   if (user.role === 'ADMIN') return <Navigate to="/admin-dashboard" replace />;
@@ -27,7 +27,7 @@ const RoleRedirect = () => {
 };
 
 function App() {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
 
   const handleLogout = () => {
